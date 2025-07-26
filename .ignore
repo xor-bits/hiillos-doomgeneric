@@ -9,7 +9,6 @@
 Debug/
 Release/
 Build/
-doomgeneric
 doomgeneric.map
 .direnv/
 .zig-cache/
