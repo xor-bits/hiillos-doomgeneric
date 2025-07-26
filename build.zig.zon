@@ -1,0 +1,13 @@
+.{
+    .name = .hiillos_doomgeneric,
+    .version = "0.0.1",
+    .fingerprint = 0xbc782eedc2cb2794,
+    .minimum_zig_version = "0.14.0",
+    .dependencies = .{
+        .hiillos = .{
+            .url = "https://github.com/xor-bits/hiillos/archive/d95f4791bb6c900ba0b98853530f93a2590b4513.tar.gz",
+            .hash = "hiillos-0.0.2-UEgdtJxqDwCn9wABzmOlHCwEta1oX5Ku1RVaflZuxalh",
+        },
+    },
+    .paths = .{"."},
+}
