@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <strings.h>
 
 #include "config.h"
 #include "deh_str.h"

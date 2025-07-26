@@ -19,6 +19,7 @@
 
 
 #include "stdlib.h"
+#include "math.h"
 
 #include "doomtype.h"
 #include "i_system.h"
