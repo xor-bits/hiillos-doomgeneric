@@ -158,10 +158,10 @@ fn mapFb(fb: gui.Framebuffer) ![]volatile u8 {
 }
 
 const Pixel = extern struct {
-    b: u8,
-    g: u8,
-    r: u8,
-    a: u8,
+    b: u8 = 0,
+    g: u8 = 0,
+    r: u8 = 0,
+    a: u8 = 255,
 };
 
 pub export fn DG_Init() callconv(.c) void {}
@@ -171,23 +171,27 @@ pub export fn DG_DrawFrame() callconv(.c) void {
     display_lock.lock();
     defer display_lock.unlock();
 
+    const aspect_ratio_diff = std.math.order(
+        display.width * doomgeneric_resy,
+        doomgeneric_resx * display.height,
+    );
+    // log.debug("aspect_ratio_diff={}", .{aspect_ratio_diff});
+    // log.debug("display={},{}", .{ display.width, display.height });
+    // log.debug("doom={},{}", .{ doomgeneric_resx, doomgeneric_resy });
+
     for (0..display.height) |y| {
         for (0..display.width) |x| {
             const px = display.subimage(
-                @intCast(x),
-                @intCast(y),
+                std.math.lossyCast(u32, x),
+                std.math.lossyCast(u32, y),
                 1,
                 1,
-            ) catch unreachable;
-            const lerp_x: usize = x * doomgeneric_resx / display.width;
-            const lerp_y: usize = y * doomgeneric_resy / display.height;
-            const c = DG_ScreenBuffer[lerp_x + lerp_y * doomgeneric_resx];
-            px.fill(@bitCast(Pixel{
-                .r = c.r,
-                .g = c.g,
-                .b = c.b,
-                .a = 255,
-            }));
+            ) catch continue;
+            px.fill(0xff_ffffff);
+            // log.debug("aspect ratio diff: {}", .{aspect_ratio_diff});
+            var col = readDoomPixel(x, y, aspect_ratio_diff);
+            col.a = 255;
+            px.fill(@bitCast(col));
         }
     }
 
@@ -200,6 +204,45 @@ pub export fn DG_DrawFrame() callconv(.c) void {
     }) catch |err| {
         log.err("failed to damage display: {}", .{err});
     };
+}
+
+fn readDoomPixel(
+    x: usize,
+    y: usize,
+    aspect_ratio_diff: std.math.Order,
+) Pixel {
+    switch (aspect_ratio_diff) {
+        .eq => {
+            //  aspect ratios match
+            const lerp_x: usize = x * doomgeneric_resx / display.width;
+            const lerp_y: usize = y * doomgeneric_resy / display.height;
+            if (lerp_x >= doomgeneric_resx) return .{};
+            if (lerp_y >= doomgeneric_resy) return .{};
+            return DG_ScreenBuffer[lerp_x + lerp_y * doomgeneric_resx];
+        },
+        .gt => {
+            // display is wider than doom 'if height is the same'
+            const bar_width = (display.width * doomgeneric_resy / display.height - doomgeneric_resx) / 2;
+            const lerp_x: usize = x * doomgeneric_resy / display.height;
+            const lerp_y: usize = y * doomgeneric_resy / display.height;
+            if (bar_width > lerp_x) return .{};
+            if (lerp_x - bar_width >= doomgeneric_resx) return .{};
+            if (lerp_y >= doomgeneric_resy) return .{};
+            // log.debug("lerp_x={} lerp_y={}", .{ lerp_x, lerp_y });
+            return DG_ScreenBuffer[lerp_x - bar_width + lerp_y * doomgeneric_resx];
+        },
+        .lt => {
+            // display is taller than doom 'if width is the same'
+            const bar_height = (display.height * doomgeneric_resx / display.width - doomgeneric_resy) / 2;
+            const lerp_x: usize = x * doomgeneric_resx / display.width;
+            const lerp_y: usize = y * doomgeneric_resx / display.width;
+            if (bar_height > lerp_y) return .{};
+            if (lerp_x >= doomgeneric_resx) return .{};
+            if (lerp_y - bar_height >= doomgeneric_resy) return .{};
+            // log.debug("lerp_x={} lerp_y={}", .{ lerp_x, lerp_y });
+            return DG_ScreenBuffer[lerp_x + (lerp_y - bar_height) * doomgeneric_resx];
+        },
+    }
 }
 
 pub export fn DG_SleepMs(ms: u32) callconv(.c) void {
