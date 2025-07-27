@@ -132,7 +132,7 @@ fn addCSources(
     inline for (doom_c_files) |c_file| {
         exe_mod.addCSourceFile(.{
             .file = b.path("doomgeneric/" ++ c_file),
-            .flags = &.{"-fno-sanitize=undefined"},
+            .flags = &.{"-fno-sanitize=undefined"}, // DOOM source is buggy, ex: left shifting a negative value
         });
     }
 
