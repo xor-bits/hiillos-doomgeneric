@@ -11,6 +11,26 @@ pub fn build(b: *std.Build) !void {
     const abi = b.dependency("hiillos", .{}).module("abi");
     const gui = b.dependency("hiillos", .{}).module("gui");
 
+    const libc_mod = b.createModule(.{
+        .root_source_file = b.path("src/libc.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &[_]std.Build.Module.Import{.{
+            .name = "abi",
+            .module = abi,
+        }},
+    });
+
+    // const libc = b.addLibrary(.{
+    //     .name = "c",
+    //     .root_module = libc_mod,
+    // });
+
+    // TODO: remove include/ and use this instead once emit-h is fixed in zig
+    // const libc_install = b.addInstallArtifact(libc, .{});
+    // libc_install.emitted_h = libc.getEmittedH();
+    // b.getInstallStep().dependOn(&libc_install.step);
+
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
@@ -21,13 +41,16 @@ pub fn build(b: *std.Build) !void {
         }, .{
             .name = "gui",
             .module = gui,
+        }, .{
+            .name = "libc",
+            .module = libc_mod,
         } },
     });
 
     try addCSources(b, exe_mod);
 
     const exe = b.addExecutable(.{
-        .name = "doomgeneric",
+        .name = "doom",
         .root_module = exe_mod,
     });
 

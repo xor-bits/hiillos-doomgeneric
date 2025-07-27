@@ -20,7 +20,6 @@
             pkg-config
             zig
             zls
-            qemu_full
           ];
 
           OVMF_FD = "${pkgs.OVMF.fd}/FV/OVMF.fd";

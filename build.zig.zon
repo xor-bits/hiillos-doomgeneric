@@ -1,7 +1,7 @@
 .{
-    .name = .hiillos_doomgeneric,
+    .name = .doom,
     .version = "0.0.1",
-    .fingerprint = 0xbc782eedc2cb2794,
+    .fingerprint = 0x7ed59d848828843,
     .minimum_zig_version = "0.14.0",
     .dependencies = .{
         .hiillos = .{
