@@ -174,15 +174,14 @@ pub export fn DG_DrawFrame() callconv(.c) void {
     for (0..display.height) |y| {
         for (0..display.width) |x| {
             const px = display.subimage(
-                std.math.lossyCast(u32, x),
-                std.math.lossyCast(u32, y),
+                @intCast(x),
+                @intCast(y),
                 1,
                 1,
-            ) catch continue;
-            const c = DG_ScreenBuffer[
-                @as(usize, @min(doomgeneric_resx, x)) +
-                    @as(usize, @min(doomgeneric_resy, y)) * doomgeneric_resx
-            ];
+            ) catch unreachable;
+            const lerp_x: usize = x * doomgeneric_resx / display.width;
+            const lerp_y: usize = y * doomgeneric_resy / display.height;
+            const c = DG_ScreenBuffer[lerp_x + lerp_y * doomgeneric_resx];
             px.fill(@bitCast(Pixel{
                 .r = c.r,
                 .g = c.g,
