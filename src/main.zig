@@ -52,7 +52,10 @@ pub fn main() !void {
 
 pub export fn DG_Init() callconv(.c) void {}
 
-pub export fn DG_DrawFrame() callconv(.c) void {}
+pub export fn DG_DrawFrame() callconv(.c) void {
+    log.err("TODO: present frame", .{});
+    return;
+}
 
 pub export fn DG_SleepMs(ms: u32) callconv(.c) void {
     _ = abi.caps.COMMON_HPET.call(
@@ -91,3 +94,7 @@ pub extern var DG_ScreenBuffer: *Pixel;
 
 pub extern fn doomgeneric_Create(argc: c_int, argv: [*c][*c]c_char) callconv(.c) void;
 pub extern fn doomgeneric_Tick() callconv(.c) void;
+
+test {
+    std.testing.refAllDeclsRecursive(@This());
+}

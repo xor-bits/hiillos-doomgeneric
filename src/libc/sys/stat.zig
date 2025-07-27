@@ -9,6 +9,7 @@ const stdio = @import("../stdio.zig");
 pub const mode_t = c_int;
 
 pub export fn mkdir(pathname: [*c]const u8, mode: mode_t) callconv(.c) c_int {
+    // abi.sys.log("mkdir()");
     const pathname_str: []const u8 = std.mem.span(pathname);
     _ = mode;
 

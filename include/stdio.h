@@ -159,7 +159,7 @@ extern FILE* fopen(const char* filename, const char* mode);
 extern size_t fread(void* ptr, size_t size, size_t count, FILE* stream);
 extern size_t fwrite(const void* ptr, size_t size, size_t count, FILE* stream);
 extern int fseek(FILE* stream, long int offset, int origin);
-extern int ftell(FILE* stream);
+extern long ftell(FILE* stream);
 extern int fflush(FILE* stream);
 extern int fclose(FILE* stream);
 extern int rename(const char* old_filename, const char* new_filename);

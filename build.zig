@@ -7,19 +7,19 @@ pub fn build(b: *std.Build) !void {
         .abi = .none,
     });
     const optimize = b.standardOptimizeOption(.{});
+    const test_step = b.step("test", "run unit tests");
 
     const abi = b.dependency("hiillos", .{}).module("abi");
     const gui = b.dependency("hiillos", .{}).module("gui");
 
-    const libc_mod = b.createModule(.{
-        .root_source_file = b.path("src/libc.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &[_]std.Build.Module.Import{.{
-            .name = "abi",
-            .module = abi,
-        }},
+    const libc = libcMod(b, target, optimize, abi);
+
+    const libc_test = libcMod(b, b.graph.host, optimize, abi);
+    const test_libc = b.addTest(.{
+        .root_module = libc_test,
     });
+    const run_test_libc = b.addRunArtifact(test_libc);
+    test_step.dependOn(&run_test_libc.step);
 
     // const libc = b.addLibrary(.{
     //     .name = "c",
@@ -31,6 +31,61 @@ pub fn build(b: *std.Build) !void {
     // libc_install.emitted_h = libc.getEmittedH();
     // b.getInstallStep().dependOn(&libc_install.step);
 
+    const exe_mod = exeMod(
+        b,
+        target,
+        optimize,
+        abi,
+        gui,
+        libc,
+    );
+
+    const exe = b.addExecutable(.{
+        .name = "doom",
+        .root_module = exe_mod,
+    });
+    b.installArtifact(exe);
+
+    const exe_test_mod = exeMod(
+        b,
+        b.graph.host,
+        optimize,
+        abi,
+        gui,
+        libc_test,
+    );
+    const test_exe = b.addTest(.{
+        .root_module = exe_test_mod,
+    });
+    const run_test_exe = b.addRunArtifact(test_exe);
+    test_step.dependOn(&run_test_exe.step);
+}
+
+fn libcMod(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    abi: *std.Build.Module,
+) *std.Build.Module {
+    return b.createModule(.{
+        .root_source_file = b.path("src/libc.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &[_]std.Build.Module.Import{.{
+            .name = "abi",
+            .module = abi,
+        }},
+    });
+}
+
+fn exeMod(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    abi: *std.Build.Module,
+    gui: *std.Build.Module,
+    libc: *std.Build.Module,
+) *std.Build.Module {
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
@@ -43,18 +98,13 @@ pub fn build(b: *std.Build) !void {
             .module = gui,
         }, .{
             .name = "libc",
-            .module = libc_mod,
+            .module = libc,
         } },
+        .link_libc = false,
+        .link_libcpp = false,
     });
-
     try addCSources(b, exe_mod);
-
-    const exe = b.addExecutable(.{
-        .name = "doom",
-        .root_module = exe_mod,
-    });
-
-    b.installArtifact(exe);
+    return exe_mod;
 }
 
 fn addCSources(
@@ -82,7 +132,7 @@ fn addCSources(
     inline for (doom_c_files) |c_file| {
         exe_mod.addCSourceFile(.{
             .file = b.path("doomgeneric/" ++ c_file),
-            .flags = &.{},
+            .flags = &.{"-fno-sanitize=undefined"},
         });
     }
 
