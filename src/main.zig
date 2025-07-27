@@ -230,10 +230,10 @@ pub export fn DG_GetKey(pressed: *c_int, key: *c_uint) callconv(.c) c_int {
     // log.info("got key event: {}", .{kev});
 
     key.* = switch (kev.code) {
-        .w => 0xad,
-        .a => 0xa0,
-        .s => 0xaf,
-        .d => 0xa1,
+        // .w => 0xad,
+        // .a => 0xa0,
+        // .s => 0xaf,
+        // .d => 0xa1,
         .arrow_right => 0xae,
         .arrow_left => 0xac,
         .arrow_up => 0xad,
@@ -309,7 +309,7 @@ pub export fn DG_GetKey(pressed: *c_int, key: *c_uint) callconv(.c) c_int {
         .numpad_mul => '*',
         .numpad_period => 0,
         .numpad_enter => 0x3d,
-        else => return 0,
+        else => kev.code.toChar() orelse return 0,
     };
     pressed.* = @intFromBool(kev.state == .press);
 
