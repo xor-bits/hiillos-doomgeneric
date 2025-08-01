@@ -54,6 +54,9 @@ https://ozkl.github.io/doomgeneric/
 
 emscripten port is based on SDL port, so it supports sound and music! For music, timidity backend is used.
 
+## Hiillos
+<img width="1280" height="827" alt="image" src="https://github.com/user-attachments/assets/aa348332-9320-43f6-8714-6bfe59985ee7" />
+
 ## Windows
 ![Windows](screenshots/windows.png)
 
