@@ -15,8 +15,7 @@ pub const log_level = .debug;
 //
 
 pub fn main() !void {
-    try abi.io.init();
-    try abi.process.init();
+    try abi.rt.init();
 
     vmem = try abi.caps.Vmem.self();
 
@@ -90,7 +89,7 @@ fn eventLoop() !void {
         const ev = try wm_display.nextEvent();
         switch (ev) {
             .window => |wev| try windowEvent(wev.event),
-            // else => {},
+            else => {},
         }
     }
 }
@@ -246,23 +245,12 @@ fn readDoomPixel(
 }
 
 pub export fn DG_SleepMs(ms: u32) callconv(.c) void {
-    _ = abi.caps.COMMON_HPET.call(
-        .sleep,
-        .{@as(u128, ms) * 1_000_000},
-    ) catch |err| {
-        log.debug("HPET sleep failed: {}", .{err});
-    };
+    abi.time.sleep(@as(u128, ms) * 1_000_000);
 }
 
 pub export fn DG_GetTicksMs() callconv(.c) u32 {
-    const nanos = abi.caps.COMMON_HPET.call(
-        .timestamp,
-        {},
-    ) catch |err| {
-        log.debug("HPET timestamp failed: {}", .{err});
-        return 0;
-    };
-    return std.math.lossyCast(u32, nanos.@"0" / 1_000_000);
+    const nanos = abi.time.nanoTimestamp();
+    return std.math.lossyCast(u32, nanos / 1_000_000);
 }
 
 pub export fn DG_GetKey(pressed: *c_int, key: *c_uint) callconv(.c) c_int {

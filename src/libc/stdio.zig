@@ -792,6 +792,12 @@ pub export fn fopen(filename: [*c]const u8, mode: [*c]const u8) callconv(.c) ?*F
         return null;
     };
 
+    const size = file.getSize() catch |err| {
+        file.close();
+        errno.errno = errno.asErrno(err);
+        return null;
+    };
+
     const fd = abi.mem.slab_allocator.create(File) catch |err| {
         file.close();
         errno.errno = errno.asErrno(err);
@@ -801,10 +807,12 @@ pub export fn fopen(filename: [*c]const u8, mode: [*c]const u8) callconv(.c) ?*F
     fd.file = file;
     fd.reader = .{ .file = .{
         .frame = file,
+        .limit = size,
         .cursor = .init(0),
     } };
     fd.writer = .{ .file = .{
         .frame = file,
+        .limit = size,
         .cursor = .init(0),
     } };
     fd.read = std.io.bufferedReader(fd.reader.?.reader());
