@@ -57,7 +57,6 @@ pub fn main() !void {
         .pixel_array = pixel_buf,
     };
     display.fill(0xff_000000);
-    display_lock = try .newLocked();
     display_lock.unlock();
 
     try window.damage(wm_display, .{
@@ -68,7 +67,6 @@ pub fn main() !void {
         },
     });
 
-    key_events_lock = try .newLocked();
     key_events_lock.unlock();
     try abi.thread.spawn(eventLoop, .{});
 
@@ -77,11 +75,11 @@ pub fn main() !void {
 }
 
 var vmem: abi.caps.Vmem = undefined;
-var display_lock: abi.lock.CapMutex = undefined;
+var display_lock: abi.thread.Mutex = .locked();
 var display: abi.util.Image([]volatile u8) = undefined;
 var wm_display: gui.WmDisplay = undefined;
 var window: gui.Window = undefined;
-var key_events_lock: abi.lock.CapMutex = undefined;
+var key_events_lock: abi.thread.Mutex = .locked();
 var key_events: std.fifo.LinearFifo(abi.input.KeyEvent, .{ .Static = 512 }) = .init();
 
 fn eventLoop() !void {
@@ -149,8 +147,7 @@ fn mapFb(fb: gui.Framebuffer) ![]volatile u8 {
         0,
         0,
         shmem_size,
-        .{ .writable = true },
-        .{},
+        .{ .write = true },
     );
 
     return @as([*]volatile u8, @ptrFromInt(shmem_addr))[0..shmem_size];

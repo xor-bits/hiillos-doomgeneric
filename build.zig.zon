@@ -5,8 +5,8 @@
     .minimum_zig_version = "0.14.0",
     .dependencies = .{
         .hiillos = .{
-            .url = "https://github.com/xor-bits/hiillos/archive/c536aabf090e08333be708abb2bd0f27eee2ae2e.tar.gz",
-            .hash = "hiillos-0.0.2-UEgdtDsXEABYvXnG-vZiJZkCXLVvFZQfutcpgjWHwujN",
+            .url = "https://github.com/xor-bits/hiillos/archive/dc028bf95ce341a4bb0e648bab6c89729349b70f.tar.gz",
+            .hash = "hiillos-0.0.2-UEgdtLk5EAALg5Y6QlTZRaOsgUytzDs4aOWuYGkGFk0I",
         },
     },
     .paths = .{"."},
