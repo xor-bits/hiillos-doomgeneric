@@ -99,7 +99,7 @@ pub export fn strdup(_src: [*c]const u8) callconv(.c) [*c]u8 {
     const src: [:0]const u8 = std.mem.span(_src);
     const alloc = @import("stdlib.zig").malloc(src.len + 1);
     if (alloc == null) return null;
-    @memcpy(alloc, src);
+    @memcpy(alloc[0..src.len], src);
     alloc[src.len] = 0;
     return alloc;
 }
